@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.byd.message.mapper.TdMessageMapper">
+
+    <resultMap type="com.byd.message.domain.Message" id="TdMessageMap">
+        <result property="id" column="message_id" jdbcType="VARCHAR"/>
+        <result property="sender" column="message_sender" jdbcType="VARCHAR"/>
+        <result property="apply" column="message_apply" jdbcType="VARCHAR"/>
+        <result property="time" column="message_time" jdbcType="TIMESTAMP"/>
+        <result property="content" column="message_content" jdbcType="VARCHAR"/>
+        <result property="receiver" column="message_receiver" jdbcType="VARCHAR"/>
+        <result property="type" column="messate_type" jdbcType="VARCHAR"/>
+        <result property="agentId" column="agent_id" jdbcType="VARCHAR"/>
+        <result property="flag" column="flag" jdbcType="INTEGER"/>
+        <result property="realSender" column="message_real_reveiver" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="queryMessageByApplyId" parameterType="String" resultMap="TdMessageMap">
+                SELECT
+                    a.*
+                FROM
+                    message.td_message AS a,
+                    ( SELECT message_sender, max( message_time ) message_time FROM message.td_message WHERE flag = 0 GROUP BY message_sender ) AS b
+                WHERE
+                    a.message_time = b.message_time
+                    AND a.message_sender = b.message_sender
+                    and a.message_apply =#{applyId}
+                    order by a.message_time desc
+    </select>
+    <!--查询单个-->
+    <select id="queryById" resultMap="TdMessageMap">
+        select
+          message_id, message_sender, message_apply, message_time, message_content, message_receiver, messate_type, agent_id
+        from message.td_message
+        where message_id = #{messageId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="TdMessageMap">
+        select
+          message_id, message_sender, message_apply, message_time, message_content, message_receiver, messate_type, agent_id
+        from message.td_message
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="TdMessageMap">
+        select
+        message_id, message_sender, message_apply, message_time, message_content, message_receiver, messate_type,
+        agent_id
+        from message.td_message
+        <where>
+            <if test="messageId != null and messageId != ''">
+                and message_id = #{messageId}
+            </if>
+            <if test="messageSender != null and messageSender != ''">
+                and message_sender = #{messageSender}
+            </if>
+            <if test="messageApply != null and messageApply != ''">
+                and message_apply = #{messageApply}
+            </if>
+            <if test="messageTime != null">
+                and message_time = #{messageTime}
+            </if>
+            <if test="messageContent != null and messageContent != ''">
+                and message_content = #{messageContent}
+            </if>
+            <if test="messageReceiver != null and messageReceiver != ''">
+                and message_receiver = #{messageReceiver}
+            </if>
+            <if test="messateType != null and messateType != ''">
+                and messate_type = #{messateType}
+            </if>
+            <if test="agentId != null and agentId != ''">
+                and agent_id = #{agentId}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryMessageByApplyAndSender" resultMap="TdMessageMap">
+        select
+          message_id, message_sender, message_apply, message_time, message_content, message_receiver, messate_type, agent_id,flag,message_real_reveiver
+        from message.td_message
+        where message_apply = #{apply}
+        and
+        DATE_FORMAT(message_time,'%Y-%m-%d')>=DATE_SUB(curdate(),interval 30 day)
+        and
+        (message_sender = #{sender}
+        or message_receiver =#{sender})
+        order by
+        message_time desc
+    </select>
+
+    <select id="queryMessageByApplyAndSenderAndTime" resultMap="TdMessageMap">
+      select
+          message_id, message_sender, message_apply, message_time, message_content, message_receiver, messate_type, agent_id,flag,message_real_reveiver
+        from message.td_message
+        where message_apply = #{apply}
+        and
+        (message_sender = #{sender}
+        or message_receiver =#{sender})
+        and
+        message_time &gt; #{date}
+        order by
+        message_time desc
+
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert">
+        insert into message.td_message(message_id,message_sender, message_apply, message_time, message_content, message_receiver, messate_type, agent_id,message_real_reveiver,flag)
+        values (#{messageId},#{messageSender}, #{messageApply}, #{messageTime}, #{messageContent}, #{messageReceiver}, #{messateType}, #{agentId},#{realSender},#{flag})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="messageId" useGeneratedKeys="true">
+        insert into message.td_message(message_sender, message_apply, message_time, message_content, message_receiver,
+        messate_type, agent_id)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.messageSender}, #{entity.messageApply}, #{entity.messageTime}, #{entity.messageContent},
+            #{entity.messageReceiver}, #{entity.messateType}, #{entity.agentId})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="messageId" useGeneratedKeys="true">
+        insert into message.td_message(message_sender, message_apply, message_time, message_content, message_receiver,
+        messate_type, agent_id)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.messageSender}, #{entity.messageApply}, #{entity.messageTime}, #{entity.messageContent},
+            #{entity.messageReceiver}, #{entity.messateType}, #{entity.agentId})
+        </foreach>
+        on duplicate key update
+        message_sender = values(message_sender) , message_apply = values(message_apply) , message_time =
+        values(message_time) , message_content = values(message_content) , message_receiver = values(message_receiver) ,
+        messate_type = values(messate_type) , agent_id = values(agent_id)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update message.td_message
+        <set>
+            <if test="messageSender != null and messageSender != ''">
+                message_sender = #{messageSender},
+            </if>
+            <if test="messageApply != null and messageApply != ''">
+                message_apply = #{messageApply},
+            </if>
+            <if test="messageTime != null">
+                message_time = #{messageTime},
+            </if>
+            <if test="messageContent != null and messageContent != ''">
+                message_content = #{messageContent},
+            </if>
+            <if test="messageReceiver != null and messageReceiver != ''">
+                message_receiver = #{messageReceiver},
+            </if>
+            <if test="messateType != null and messateType != ''">
+                messate_type = #{messateType},
+            </if>
+            <if test="agentId != null and agentId != ''">
+                agent_id = #{agentId},
+            </if>
+        </set>
+        where message_id = #{messageId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from message.td_message where message_id = #{messageId}
+    </delete>
+
+</mapper>
+

@@ -1,0 +1,30 @@
+server:
+  port: 7071
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:mysql://localhost:3306/message?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true
+    username: root
+    password: 123456
+    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
+    dbType: mysql
+    filters: stat,wall,logback
+    initialSize: 5
+    maxActive: 20
+    maxWait: 60000
+    minEvictableIdleTimeMillis: 300000
+    minIdle: 5
+    poolPreparedStatements: false
+    testOnBorrow: false
+    testOnReturn: false
+    testWhileIdle: true
+    timeBetweenEvictionRunsMillis: 60000
+    useGlobalDataSourceStat: true
+    validationQuery: select 'x'
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  
+logging:
+  level:
+    com.byd.message.mapper : debug

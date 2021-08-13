@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.byd.message.mapper.TsApplyMapper">
+
+    <resultMap type="com.byd.message.entity.TsApply" id="TsApplyMap">
+        <result property="applyId" column="apply_id" jdbcType="INTEGER"/>
+        <result property="applyName" column="apply_name" jdbcType="VARCHAR"/>
+        <result property="applyUrl" column="apply_url" jdbcType="VARCHAR"/>
+        <result property="applyAgentId" column="apply_agent_id" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="TsApplyMap">
+        select
+          apply_id, apply_name, apply_url, apply_agent_id
+        from message.ts_apply
+        where apply_id = #{applyId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="TsApplyMap">
+        select
+          apply_id, apply_name, apply_url, apply_agent_id
+        from message.ts_apply
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="TsApplyMap">
+        select
+        apply_id, apply_name, apply_url, apply_agent_id
+        from message.ts_apply
+        <where>
+            <if test="applyId != null">
+                and apply_id = #{applyId}
+            </if>
+            <if test="applyName != null and applyName != ''">
+                and apply_name = #{applyName}
+            </if>
+            <if test="applyUrl != null and applyUrl != ''">
+                and apply_url = #{applyUrl}
+            </if>
+            <if test="applyAgentId != null and applyAgentId != ''">
+                and apply_agent_id = #{applyAgentId}
+            </if>
+        </where>
+    </select>
+    <select id="getApply" resultMap="TsApplyMap">
+            select
+                a.apply_id,
+                a.apply_name,
+                a.apply_url,
+                a.apply_agent_id
+            from
+                message.user_apply ua
+            left join message.ts_apply a on
+                ua.apply_id = a.apply_id
+            where
+                ua.user_id = #{userId}
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="applyId" useGeneratedKeys="true">
+        insert into message.ts_apply(apply_name, apply_url, apply_agent_id)
+        values (#{applyName}, #{applyUrl}, #{applyAgentId})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="applyId" useGeneratedKeys="true">
+        insert into message.ts_apply(apply_name, apply_url, apply_agent_id)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.applyName}, #{entity.applyUrl}, #{entity.applyAgentId})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="applyId" useGeneratedKeys="true">
+        insert into message.ts_apply(apply_name, apply_url, apply_agent_id)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.applyName}, #{entity.applyUrl}, #{entity.applyAgentId})
+        </foreach>
+        on duplicate key update
+        apply_name = values(apply_name) , apply_url = values(apply_url) , apply_agent_id = values(apply_agent_id)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update message.ts_apply
+        <set>
+            <if test="applyName != null and applyName != ''">
+                apply_name = #{applyName},
+            </if>
+            <if test="applyUrl != null and applyUrl != ''">
+                apply_url = #{applyUrl},
+            </if>
+            <if test="applyAgentId != null and applyAgentId != ''">
+                apply_agent_id = #{applyAgentId},
+            </if>
+        </set>
+        where apply_id = #{applyId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from message.ts_apply where apply_id = #{applyId}
+    </delete>
+
+</mapper>
+

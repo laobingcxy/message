@@ -1,0 +1,22 @@
+{
+  "ToUserName": "发给的应用",
+  "FromUserName": "谁发的",
+  "CreateTime": "2021-07-22 19:37:07",
+  "MsgType": "text",
+  "MsgId": "这个是唯一id",
+  "AgentID": "这个暂时可以不用",
+  "Content": "消息内容",
+  "appId": "应用Id用来区分给哪个应用发，唯一"
+}
+
+
+{
+  "ToUserName": "1",
+  "FromUserName": "3333",
+  "CreateTime": "1628696727",
+  "MsgType": "text",
+  "MsgId": "32131",
+  "AgentID": "2",
+  "Content": "测试一条消息",
+  "appId": "1"
+}

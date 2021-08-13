@@ -1,0 +1,12 @@
+spring:
+  profiles:
+    active: @profile.active@
+jasypt:
+  encryptor:
+    password: byd
+
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  pageSizeZero: false

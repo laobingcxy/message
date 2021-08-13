@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.byd.message.mapper.AdminUserMapper">
+
+    <resultMap type="com.byd.message.entity.AdminUser" id="AdminUserMap">
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="username" column="username" jdbcType="VARCHAR"/>
+        <result property="realname" column="realname" jdbcType="VARCHAR"/>
+        <result property="avatar" column="avatar" jdbcType="VARCHAR"/>
+        <result property="ctime" column="ctime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="AdminUserMap">
+        select
+          user_id, username, realname, avatar, ctime
+        from message.admin_user
+        where user_id = #{userId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="AdminUserMap">
+        select
+          user_id, username, realname, avatar, ctime
+        from message.admin_user
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="AdminUserMap">
+        select
+        user_id, username, realname, avatar, ctime
+        from message.admin_user
+        <where>
+            <if test="userId != null">
+                and user_id = #{userId}
+            </if>
+            <if test="username != null and username != ''">
+                and username = #{username}
+            </if>
+            <if test="realname != null and realname != ''">
+                and realname = #{realname}
+            </if>
+            <if test="avatar != null and avatar != ''">
+                and avatar = #{avatar}
+            </if>
+            <if test="ctime != null">
+                and ctime = #{ctime}
+            </if>
+        </where>
+    </select>
+    <select id="queryAuthList" parameterType="String" resultType="com.byd.message.dto.AdminAuthBean">
+        select
+        u.user_id userId,
+        u.avatar avatar,
+        u.username,
+        u.cuser cUser,
+        u.ctime cTime,
+        u.enable enable,
+        ar.name roleName
+        from
+        message.admin_user_role r
+        inner join
+        message.admin_user u on u.user_id =r.user_id
+        inner join
+        message.admin_role ar on r.role_id =ar.role_id
+        <if test="query != null  ">
+            and (u.user_id like CONCAT('%',#{query},'%')
+            or u.username like CONCAT('%',#{query},'%'))
+        </if>
+    </select>
+    <select id="queryUserExist" resultType="com.byd.message.entity.AdminUserRole">
+       select
+          user_id userId,
+          role_id roleId
+        from message.admin_user_role
+        where user_id = #{userId}
+
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert">
+        insert into message.admin_user(user_id,username, realname, avatar, ctime,enable,cuser)
+        values (#{userId},#{username}, #{realname}, #{avatar}, #{ctime},#{enable},#{cuser})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="userId" useGeneratedKeys="true">
+        insert into message.admin_user(username, realname, avatar, ctime)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.username}, #{entity.realname}, #{entity.avatar}, #{entity.ctime})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="userId" useGeneratedKeys="true">
+        insert into message.admin_user(username, realname, avatar, ctime)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.username}, #{entity.realname}, #{entity.avatar}, #{entity.ctime})
+        </foreach>
+        on duplicate key update
+        username = values(username) , realname = values(realname) , avatar = values(avatar) , ctime = values(ctime)
+    </insert>
+    <insert id="inserRoleUser">
+
+        insert into message.admin_user_role(role_id,user_id)
+        value(#{roleId},#{userId})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update message.admin_user
+        <set>
+            <if test="username != null and username != ''">
+                username = #{username},
+            </if>
+            <if test="realname != null and realname != ''">
+                realname = #{realname},
+            </if>
+            <if test="avatar != null and avatar != ''">
+                avatar = #{avatar},
+            </if>
+            <if test="ctime != null">
+                ctime = #{ctime},
+            </if>
+        </set>
+        where user_id = #{userId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from message.admin_user where user_id = #{userId}
+    </delete>
+
+</mapper>
+

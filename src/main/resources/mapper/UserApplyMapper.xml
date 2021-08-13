@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.byd.message.mapper.UserApplyMapper">
+
+    <resultMap type="com.byd.message.entity.UserApply" id="UserApplyMap">
+        <result property="applyId" column="apply_id" jdbcType="VARCHAR"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="UserApplyMap">
+        select
+          apply_id, user_id
+        from message.user_apply
+        where apply_id = #{applyId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="UserApplyMap">
+        select
+          apply_id, user_id
+        from message.user_apply
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="UserApplyMap">
+        select
+        apply_id, user_id
+        from message.user_apply
+        <where>
+            <if test="applyId != null and applyId != ''">
+                and apply_id = #{applyId}
+            </if>
+            <if test="userId != null">
+                and user_id = #{userId}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert">
+        insert into message.user_apply(user_id,apply_id)
+        values (#{userId},#{applyId})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="applyId" useGeneratedKeys="true">
+        insert into message.user_apply(user_id,apply_id)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.userId},#{entity.applyId})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="applyId" useGeneratedKeys="true">
+        insert into message.user_apply()
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            ()
+        </foreach>
+        on duplicate key update
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update message.user_apply
+        <set>
+        </set>
+        where apply_id = #{applyId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from message.user_apply where apply_id = #{applyId}
+    </delete>
+
+</mapper>
+
